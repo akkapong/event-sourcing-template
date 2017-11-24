@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+  event_test_mongo:
+    restart: always
+    image: mongo:3.4
+    expose:
+      - "27017"
+    ports:
+      - "27011:27017"
+    volumes:
+      - mongo:/data/db
+    mem_limit: 96m
+    container_name: event_test_mongo
+
+  event_test_maria:
+    restart: always
+    image: mariadb:10.3
+    expose:
+      - "3306"
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+    mem_limit: 96m
+    env_file:
+        - variables.env
+    container_name: event_test_maria
+
+  event_test_api:
+    build: api/
+    tty: true
+    restart: always
+    ports:
+      - "8011:80"
+    volumes:
+      - ../:/var/www/html
+      - ./nginx-sites:/etc/nginx/sites-available
+      - ./nginx-sites:/etc/nginx/sites-enabled
+    mem_limit: 128m
+    links:
+      - event_test_mongo:mongo
+      - event_test_maria:maria
+    container_name: event_test_api
+
+volumes:
+  mongo:
+    driver: local
+  mysql:
+    driver: local

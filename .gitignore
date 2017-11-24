@@ -1,0 +1,7 @@
+/vendor
+/node_modules
+.production.env
+.env
+.DS_Store
+/report
+/build
