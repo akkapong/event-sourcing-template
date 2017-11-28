@@ -23,7 +23,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Event\\": "src/"
+      "Event\\": "src/",
+      "Script\\": "script/"
     }
   }
 }
