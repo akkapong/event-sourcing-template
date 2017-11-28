@@ -2,7 +2,6 @@
 namespace Event\[[name]]\UI\Controllers;
 
 use Event\Core\Controllers\ControllerBase;
-// use Event\Users\Model\Command\RegisterUser;
 [[use]]
 
 
