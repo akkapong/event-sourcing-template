@@ -1,0 +1,14 @@
+<?php
+namespace Event\[[name]]\Collections;
+
+use Phalcon\Mvc\MongoCollection;
+
+class [[module]]Collection extends MongoCollection
+{
+    [[columns]]
+
+    public function getSource()
+    {
+        return '[[collection]]';
+    }
+}

@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Model\Command;
+
+use Prooph\Common\Messaging\Command;
+use Prooph\Common\Messaging\PayloadTrait;
+
+class [[command]] extends Command
+{
+    use PayloadTrait;
+
+    [[function]]
+}

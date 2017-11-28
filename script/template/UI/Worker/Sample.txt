@@ -1,0 +1,157 @@
+<?php
+use Phalcon\DI;
+use Phalcon\DI\InjectionAwareInterface;
+use Phalcon\Cli\Task;
+
+use Event\[[name]]\Projection\[[module]]Projector;
+use Event\[[name]]\Collections\[[module]]Collection;
+use Event\[[name]]\Infrastructure\[[module]]Repository;
+
+use Prooph\Common\Event\ProophActionEventEmitter;
+use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\EventStore\ActionEventEmitterEventStore;
+use Prooph\EventStore\Pdo\MariaDbEventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\MariaDbAggregateStreamStrategy;
+use Prooph\ServiceBus\EventBus;
+use Prooph\ServiceBus\Plugin\Router\EventRouter;
+use Prooph\SnapshotStore\Pdo\PdoSnapshotStore;
+use Prooph\EventStore\Metadata\MetadataMatcher;
+use Prooph\EventStore\Metadata\Operator;
+use Prooph\EventStore\Pdo\Projection\MariaDbProjectionManager;
+
+use Prooph\EventSourcing\EventStoreIntegration\AggregateTranslator;
+use Prooph\Snapshotter\CategorySnapshotProjection;
+use Prooph\Snapshotter\SnapshotReadModel;
+
+use Prooph\Common\Messaging\Message;
+use Prooph\EventStore\Projection\Projector;
+
+use Event\[[name]]\Model\[[module]];
+
+class [[module]]Task extends Task implements InjectionAwareInterface
+{
+    //====== Start: Define parameter =======//
+    private $eventStore;
+    private $eventBus;
+    private $pdoSnapshotStore;
+    private $moduleRepository;
+    private $projectionManager;
+    //====== End: Define parameter =======//
+
+    //====== Start: Support Method =======//
+    //Method for init 
+    protected function init()
+    {
+        $databaseConfig          = $this->config->database->connections->mysql;
+
+        $pdo                     = new PDO("mysql:dbname=$databaseConfig->database;host=$databaseConfig->host", "$databaseConfig->username", "$databaseConfig->password");
+        $eventStore              = new MariaDbEventStore(new FQCNMessageFactory(), $pdo, new MariaDbAggregateStreamStrategy());
+        $eventEmitter            = new ProophActionEventEmitter();
+        $this->eventStore        = new ActionEventEmitterEventStore($eventStore, $eventEmitter);
+        
+        $this->eventBus          = new EventBus($eventEmitter);
+        $this->createRoute($this->eventBus);
+        
+        $this->pdoSnapshotStore  = new PdoSnapshotStore($pdo);
+        $this->moduleRepository  = new [[module]]Repository($eventStore, $pdoSnapshotStore);
+        
+        $this->projectionManager = new MariaDbProjectionManager($eventStore, $pdo);
+    }
+
+    //methiod for create route
+    protected function createRoute($eventBus)
+    {
+        $orojector = new [[module]]Projector(new [[module]]Collection());
+        $eventRouter = new EventRouter();
+        // $eventRouter->route(EmailChanged::class)->to([$orojector, 'onEmailChanged']);
+        // $eventRouter->route(UserRegistered::class)->to([$orojector, 'onUserRegistered']);
+        $eventRouter->attachToMessageBus($eventBus);
+    }
+    //====== End: Support Method =======//
+
+    //====== Start: Main Method =======//
+    //Method for check merchat status
+    public function registerAction(array $params)
+    {
+        $this->init();
+        
+        while (true) {
+            echo ".";
+            
+            $metadata = new MetadataMatcher;
+            $oper     = Operator::byName('EQUALS');
+            $names    = $this->eventStore->fetchStreamNames(null, $metadata->withMetadataMatch('status', $oper, 'process'));
+
+            foreach ($names as $name) {
+
+                $event = $this->eventStore->load($name)->current();
+                
+                $this->eventBus->dispatch($event);
+
+                //update meta data
+                $this->eventStore->updateStreamMetadata($name, ['status' => 'finished']);
+
+
+
+            }
+            sleep(1);
+            
+        }
+        return true;
+    }
+
+    //Method for create snapshot
+    public function snapshotAction(array $params)
+    {
+        $this->init();
+
+        $snapshotReadModel = new SnapshotReadModel(
+            $this->moduleRepository,
+            new AggregateTranslator(),
+            $this->pdoSnapshotStore,
+            [[[module]]::class]
+        );
+
+        $projection = $this->projectionManager->createReadModelProjection(
+            'user_snapshots',
+            $snapshotReadModel
+        );
+        $categoryProjection = new CategorySnapshotProjection($projection, [[module]]::class);
+        $categoryProjection();
+        $projection->run(false);
+
+        return true;
+    }
+
+    //Method for restore data
+    public function restoreAction(array $params)
+    {
+        $config = $this->config;
+        $commandBus = new Prooph\ServiceBus\CommandBus();
+        require "config/event.php";
+
+        $projectionManager = new MariaDbProjectionManager($eventStore, $pdo);
+
+        $projection = $projectionManager->createProjection('restore_data', [Projector::OPTION_PCNTL_DISPATCH => true,]);
+        $projection->reset();
+
+        pcntl_signal(SIGQUIT, function () use ($projection) {
+            print_r("\n\nExit\n\n");
+            $projection->stop();
+        });
+
+        $projection
+            ->fromCategory([[module]]::class)
+            ->whenAny(
+                function (array $state, Message $event) use ($eventBus): array {
+                    $eventBus->dispatch($event);
+                    return $state;
+                }
+            );
+        $projection->run(false);
+
+
+        return true;
+    }
+    //====== End: Main Method =======//
+}

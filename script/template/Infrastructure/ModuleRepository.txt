@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Infrastructure;
+
+use Event\[[name]]\Model\[[module]];
+use Prooph\EventSourcing\Aggregate\AggregateRepository;
+use Prooph\EventSourcing\Aggregate\AggregateType;
+use Prooph\EventSourcing\EventStoreIntegration\AggregateTranslator;
+use Prooph\EventStore\EventStore;
+use Prooph\SnapshotStore\SnapshotStore;
+use Event\[[name]]\Model\[[module]]Repository as Base[[module]]Repository;
+
+class [[module]]Repository extends AggregateRepository implements Base[[module]]Repository
+{
+    public function __construct(EventStore $eventStore, SnapshotStore $snapshotStore)
+    {
+        parent::__construct(
+            $eventStore,
+            AggregateType::fromAggregateRootClass([[module]]::class),
+            new AggregateTranslator(),
+            $snapshotStore,
+            null,
+            true
+        );
+    }
+
+    protected function updateMetadata([[module]] $module)
+    {
+        $aggregateId = $this->aggregateTranslator->extractAggregateId($module);
+        $name        = $this->determineStreamName($aggregateId);
+        $this->eventStore->updateStreamMetadata($name, ['status' => 'process']);
+    
+    }
+
+    public function save([[module]] $module): void
+    {
+        $this->saveAggregateRoot($module);
+        //update meta
+        $this->updateMetadata($module);
+    }
+
+    public function get(string $id): ?[[module]]
+    {
+        return $this->getAggregateRoot($id);
+    }
+}

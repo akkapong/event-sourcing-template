@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Model\Event;
+
+use Prooph\EventSourcing\AggregateChanged;
+
+class [[event]] extends AggregateChanged
+{
+	public function __construct(string $aggregateId, array $payload, array $metadata = [])
+	{
+		parent::__construct($aggregateId, $payload, $metadata);
+	}
+
+    [[function]]
+}

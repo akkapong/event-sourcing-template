@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Projection;
+
+[[use]]
+// use Event\[[name]]\Model\Event\EmailChanged;
+// use Event\[[name]]\Model\Event\UserRegistered;
+
+use Event\[[name]]\Collections\[[module]]Collection;
+use Event\Core\Repositories\CollectionRepositories;
+
+class [[module]]Projector extends CollectionRepositories
+{
+    //==== Start: Define variable ====//
+    public $module         = '[[lower_module]]';
+    public $collectionName = '[[module]]Collection';
+    public $allowFilter    = [[allow_fields]]
+    public $model;
+    //==== Start: Define variable ====//
+
+
+    //==== Start: Support method ====//
+    public function __construct()
+    {
+        $collectionName = "\\Event\\[[name]]\\Collections\\".$this->collectionName;
+        $this->model = new $collectionName();
+    }
+    //==== End: Support method ====//
+
+    [[on_function]]
+    
+}

@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Model;
+
+interface [[module]]Repository
+{
+    public function save([[module]] $module): void;
+    public function get(string $id): ?[[module]];
+}

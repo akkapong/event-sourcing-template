@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Model;
+
+[[use]]
+use Prooph\EventSourcing\AggregateChanged;
+use Prooph\EventSourcing\AggregateRoot;
+
+class [[module]] extends AggregateRoot
+{
+    [[columns]]
+
+    [[function_data]]
+
+    protected function aggregateId(): string
+    {
+        return $this->id;
+    }
+
+    protected function apply(AggregateChanged $event): void
+    {
+        switch (get_class($event)) {
+            [[case_event]]
+        }
+    }
+}

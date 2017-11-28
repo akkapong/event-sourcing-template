@@ -32,9 +32,23 @@ $api->addPost('/user/register', [
     'action'     => 'postRegister',
 ]);
 
+
+
 //==== End : user Section ====//
 
 //==== End : Deal Section ====//
+
+$router->mount($api);
+
+$api = new RouterGroup(array(
+    'namespace' => 'Event\Notes\UI\Controllers'
+));
+
+//@create route
+$api->addPost('/api/note', [
+    'controller' => 'note',
+    'action'     => 'postNote',
+]);
 
 $router->mount($api);
 

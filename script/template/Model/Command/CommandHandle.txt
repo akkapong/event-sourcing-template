@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Event\[[name]]\Model\Command;
+
+use Event\[[name]]\Model\[[module]];
+use Event\[[name]]\Model\[[module]]Repository;
+use Event\[[name]]\Model\Command\[[command]];
+
+class [[command]]Handler
+{
+    private $repository;
+
+    public function __construct([[module]]Repository $repository)
+    {
+        $this->repository = $repository;
+    }
+
+    public function __invoke([[command]] $commandClass): void
+    {
+        [[handle]]
+    }
+}

@@ -1,0 +1,62 @@
+<?php
+namespace Event\[[name]]\UI\Controllers;
+
+use Event\Core\Controllers\ControllerBase;
+// use Event\Users\Model\Command\RegisterUser;
+[[use]]
+
+
+/**
+ * Display the default index page.
+ */
+class [[module]]Controller extends ControllerBase
+{
+    //==== Start: Define variable ====//
+    private $module = '[[lower_module]]';
+
+    private $sampleRule = [
+        //TODO: add rule here!!
+        // [
+        //     'type'   => 'required',
+        //     'fields' => ['email', 'password'],
+        // ],
+    ];
+    //==== End: Define variable ====//
+
+    //==== Start: Support method ====//
+    
+    //==== End: Support method ====//
+
+    //==== Start: Main method ====//
+    public function getSampleAction()
+    {
+        //get inputuserId
+        // $params = $this->getPostInput(); 
+        [[param]]
+
+        //define default
+        $default = [
+            "id" => $this->generateUserId(), //generate id
+        ];
+
+        // Validate 
+        $params = $this->myValidate->validateApi($this->sampleRule, $default, $params);
+
+        if (isset($params['validate_error'])) {
+            //Validate error
+            return $this->responseError($params['validate_error'], "/$module");
+        }
+
+        //TODO: create command to db
+        // $this->commandBus->dispatch(new RegisterUser([
+        //     'id'       => $params['id'],
+        //     'email'    => $params['email'],
+        //     'password' => $params['password'],
+        // ]));
+
+        return $this->output(json_encode(['id' => $params['id']]));
+    }
+
+   
+    //==== End: Main method ====//
+}
