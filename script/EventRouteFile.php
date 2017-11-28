@@ -38,7 +38,7 @@ class EventRouteFile implements GenFile {
 	//Method for create projector
 	protected function createProjector(string $projectorName): string
 	{
-		return "\$$projectorName = new ".$this->configs['module']."Projector(\$pdo);\n";
+		return "\$$projectorName = new ".$this->configs['module']."Projector();\n";
 	}
 
 

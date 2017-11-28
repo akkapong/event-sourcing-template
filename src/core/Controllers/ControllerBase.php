@@ -170,4 +170,9 @@ class ControllerBase extends Controller
         }
         return $default;
     }
+
+    protected function generateUserId()
+    {
+        return date("Y-m-d-His-").str_pad(rand(0, 999),  3, "0");
+    }
 }
